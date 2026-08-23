@@ -1,0 +1,168 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "sqlite" url = env("DATABASE_URL") }
+
+enum Role { USER MODERATOR ADMIN }
+enum Visibility { PUBLIC PRIVATE GROUP }
+enum PostType { GENERAL SERVICE JOB HELP IMPORTANT }
+enum EventStatus { ACTIVE CANCELLED }
+enum AttendanceStatus { GOING MAYBE }
+enum ReportStatus { OPEN REVIEWED RESOLVED }
+
+model User {
+  id String @id @default(cuid())
+  email String? @unique
+  phone String? @unique
+  passwordHash String
+  name String
+  birthDate DateTime
+  avatarUrl String?
+  place String @default("Гальнево")
+  bio String?
+  profession String?
+  interests String @default("[]")
+  skills String @default("[]")
+  role Role @default(USER)
+  verified Boolean @default(false)
+  locationVisible Boolean @default(false)
+  lat Float?
+  lng Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts Post[]
+  events Event[] @relation("Organizer")
+  attendances Attendance[]
+  messages Message[]
+  notifications Notification[]
+  reports Report[] @relation("Reporter")
+  blockedBy Block[] @relation("Blocked")
+  blocking Block[] @relation("Blocker")
+  reviewsWritten Review[] @relation("Reviewer")
+  reviewsReceived Review[] @relation("Reviewee")
+  calendarEntries CalendarEntry[]
+  pushSubscriptions PushSubscription[]
+}
+
+model Post {
+  id String @id @default(cuid())
+  title String
+  body String
+  category String
+  type PostType @default(GENERAL)
+  expiresAt DateTime?
+  lat Float?
+  lng Float?
+  authorId String
+  author User @relation(fields:[authorId], references:[id], onDelete:Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reports Report[]
+}
+
+model Event {
+  id String @id @default(cuid())
+  title String
+  description String
+  imageUrl String?
+  startsAt DateTime
+  endsAt DateTime
+  lat Float
+  lng Float
+  placeName String
+  minAge Int?
+  status EventStatus @default(ACTIVE)
+  organizerId String
+  organizer User @relation("Organizer", fields:[organizerId], references:[id], onDelete:Cascade)
+  attendances Attendance[]
+  messages Message[]
+  createdAt DateTime @default(now())
+}
+
+model Attendance {
+  id String @id @default(cuid())
+  status AttendanceStatus
+  userId String
+  eventId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  event Event @relation(fields:[eventId], references:[id], onDelete:Cascade)
+  @@unique([userId,eventId])
+}
+
+model Message {
+  id String @id @default(cuid())
+  body String
+  senderId String
+  receiverId String?
+  eventId String?
+  sender User @relation(fields:[senderId], references:[id], onDelete:Cascade)
+  receiver User? @relation(fields:[receiverId], references:[id], onDelete:Cascade)
+  event Event? @relation(fields:[eventId], references:[id], onDelete:Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id String @id @default(cuid())
+  userId String
+  type String
+  title String
+  body String
+  read Boolean @default(false)
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id String @id @default(cuid())
+  reason String
+  details String?
+  status ReportStatus @default(OPEN)
+  reporterId String
+  targetUserId String?
+  targetPostId String?
+  reporter User @relation("Reporter", fields:[reporterId], references:[id], onDelete:Cascade)
+  targetPost Post? @relation(fields:[targetPostId], references:[id], onDelete:Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Block {
+  id String @id @default(cuid())
+  blockerId String
+  blockedId String
+  blocker User @relation("Blocker", fields:[blockerId], references:[id], onDelete:Cascade)
+  blocked User @relation("Blocked", fields:[blockedId], references:[id], onDelete:Cascade)
+  @@unique([blockerId,blockedId])
+}
+
+model Review {
+  id String @id @default(cuid())
+  rating Int
+  text String
+  reviewerId String
+  revieweeId String
+  reviewer User @relation("Reviewer", fields:[reviewerId], references:[id], onDelete:Cascade)
+  reviewee User @relation("Reviewee", fields:[revieweeId], references:[id], onDelete:Cascade)
+  createdAt DateTime @default(now())
+}
+
+model CalendarEntry {
+  id String @id @default(cuid())
+  title String
+  description String?
+  startsAt DateTime
+  endsAt DateTime
+  placeName String?
+  lat Float?
+  lng Float?
+  visibility Visibility @default(PRIVATE)
+  userId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  createdAt DateTime @default(now())
+}
+
+model PushSubscription {
+  id String @id @default(cuid())
+  userId String
+  endpoint String @unique
+  p256dh String
+  auth String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+}

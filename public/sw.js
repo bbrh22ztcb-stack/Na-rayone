@@ -1,0 +1,1 @@
+self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('push',e=>{let d={title:'На Районе',body:'Новое уведомление'};try{d=JSON.parse(e.data.text())}catch{};e.waitUntil(self.registration.showNotification(d.title,{body:d.body,icon:'/icon-192.png'}))});
