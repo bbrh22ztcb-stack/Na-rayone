@@ -1,0 +1,3 @@
+'use client';
+import{useEffect,useState}from'react';
+export default function Notifications(){const[n,setN]=useState<any[]>([]);async function load(){const r=await fetch('/api/notifications');setN(r.ok?await r.json():[])}useEffect(()=>{load()},[]);async function read(){await fetch('/api/notifications',{method:'PATCH'});load()}return <div className="stack"><div className="space"><h1>Уведомления</h1><button className="btn" onClick={read}>Отметить прочитанными</button></div>{n.map(x=><div className="card" key={x.id}><b>{x.title}</b><p>{x.body}</p><small className="muted">{new Date(x.createdAt).toLocaleString('ru-RU')} {x.read?'':'· новое'}</small></div>)}</div>}

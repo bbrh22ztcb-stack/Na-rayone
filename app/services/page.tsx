@@ -1,0 +1,3 @@
+import Link from'next/link';
+import{db}from'@/lib/db';
+export default async function Services(){const ps=await db.post.findMany({where:{type:{in:['SERVICE','JOB','HELP']}},include:{author:true},orderBy:{createdAt:'desc'}});return <div className="stack"><div className="space"><div><h1>Работа и услуги</h1><p className="muted">Локальная доска специалистов и помощи</p></div><Link className="btn primary" href="/posts/new">Создать объявление</Link></div><div className="list">{ps.map(p=><article className="card" key={p.id}><div className="space"><h2>{p.title}</h2><span className="pill">{p.category}</span></div><p>{p.body}</p><div className="muted">{p.author.name} · рейтинг пока не задан</div></article>)}</div></div>}

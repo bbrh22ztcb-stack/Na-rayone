@@ -1,0 +1,3 @@
+import Link from'next/link';
+import{db}from'@/lib/db';
+export default async function Sp(){const ps=await db.post.findMany({where:{expiresAt:{gt:new Date()}},include:{author:true},orderBy:{createdAt:'desc'}});return <div className="stack"><div className="space"><div><h1>⚡ Спонтанное</h1><p className="muted">Быстрые планы, компания и помощь прямо сейчас</p></div><Link className="btn primary" href="/spontaneous/new">Создать</Link></div>{ps.map(p=><article className="card" key={p.id}><div className="space"><h2>{p.title}</h2><span className="pill">до {new Date(p.expiresAt!).toLocaleString('ru-RU')}</span></div><p>{p.body}</p><div className="muted">{p.author.name} · {p.category}</div><button className="btn" style={{marginTop:10}}>Присоединиться</button></article>)}</div>}

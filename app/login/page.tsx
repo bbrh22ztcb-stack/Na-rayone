@@ -1,0 +1,5 @@
+'use client';
+import{useState}from'react';
+import{useRouter}from'next/navigation';
+import Link from'next/link';
+export default function Login(){const[e,sE]=useState('demo@narayon.local'),[p,sP]=useState('demo12345'),[x,sX]=useState('');const r=useRouter();async function go(a:any){a.preventDefault();const q=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,password:p})});if(q.ok)r.push('/');else sX((await q.json()).error)}return <div className="card" style={{maxWidth:480,margin:'40px auto'}}><h1>Вход</h1><p className="muted">Демо: demo@narayon.local / demo12345</p><form className="form" onSubmit={go}><div className="field"><label>Email</label><input value={e} onChange={a=>sE(a.target.value)}/></div><div className="field"><label>Пароль</label><input type="password" value={p} onChange={a=>sP(a.target.value)}/></div>{x&&<p style={{color:'var(--danger)'}}>{x}</p>}<button className="btn primary">Войти</button><Link href="/register" className="btn">Создать аккаунт</Link></form></div>}
